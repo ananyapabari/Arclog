@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Journal - Productivity Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="bi bi-journal-text"></i> Journal
+            </h1>
+            <a href="{% url 'journal:journal_create' %}" class="btn btn-success">
+                <i class="bi bi-plus"></i> New Entry
+            </a>
+        </div>
+        
+        <!-- Journal Entries -->
+        {% if entries %}
+            <div class="row">
+                {% for entry in entries %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card card-hover">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">
+                                        {% if entry.title %}{{ entry.title }}{% else %}Untitled Entry{% endif %}
+                                    </h6>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="{% url 'journal:journal_detail' entry.pk %}">
+                                                <i class="bi bi-eye"></i> View
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="{% url 'journal:journal_update' entry.pk %}">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="{% url 'journal:journal_delete' entry.pk %}">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <p class="card-text text-muted small">{{ entry.content|truncatewords:15 }}</p>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="mood-indicator">{{ entry.mood_emoji }}</span>
+                                        <span class="badge bg-{{ entry.get_mood_color }}">{{ entry.get_mood_display }}</span>
+                                    </div>
+                                    
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar"></i> {{ entry.date|date:"M d, Y" }}
+                                    </small>
+                                </div>
+                                
+                                {% if entry.tags %}
+                                    <div class="mt-2">
+                                        {% for tag in entry.tag_list %}
+                                            <span class="badge bg-light text-dark me-1">#{{ tag }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-lightning"></i> Energy: {{ entry.energy_level }}/10
+                                        <i class="bi bi-graph-up ms-2"></i> Productivity: {{ entry.productivity_score }}/10
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+                <nav aria-label="Journal pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        <li class="page-item active">
+                            <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-journal-text text-muted" style="font-size: 4rem;"></i>
+                <h3 class="text-muted mt-3">No journal entries yet</h3>
+                <p class="text-muted">Start your journaling journey by creating your first entry!</p>
+                <a href="{% url 'journal:journal_create' %}" class="btn btn-success">
+                    <i class="bi bi-plus"></i> Create Entry
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+
+

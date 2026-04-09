@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - Productivity Tracker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">
+                    <i class="bi bi-gear"></i> Settings
+                </h3>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Appearance</h5>
+                            <div class="mb-3">
+                                <label for="theme_preference" class="form-label">Theme</label>
+                                <select name="theme_preference" id="theme_preference" class="form-select">
+                                    <option value="light" {% if profile.theme_preference == 'light' %}selected{% endif %}>Light</option>
+                                    <option value="dark" {% if profile.theme_preference == 'dark' %}selected{% endif %}>Dark</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Notifications</h5>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="email_notifications" 
+                                       name="email_notifications" {% if profile.email_notifications %}checked{% endif %}>
+                                <label class="form-check-label" for="email_notifications">
+                                    Email Notifications
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check"></i> Save Settings
+                        </button>
+                        <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Profile
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Theme Preview -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Theme Preview</h5>
+                <p class="card-text">Toggle between light and dark themes to see how the app will look.</p>
+                <button class="btn btn-outline-primary" onclick="toggleTheme()">
+                    <i class="bi bi-sun" id="preview-theme-icon"></i> Toggle Theme
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-radius: 0.375rem;
+    }
+    
+    .btn {
+        border-radius: 0.375rem;
+    }
+</style>
+
+<script>
+    // Update preview icon based on current theme
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+        const previewIcon = document.getElementById('preview-theme-icon');
+        if (previewIcon) {
+            previewIcon.className = currentTheme === 'dark' ? 'bi bi-moon' : 'bi bi-sun';
+        }
+    });
+</script>
+{% endblock %}
+
+
+
+

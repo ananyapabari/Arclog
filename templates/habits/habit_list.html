@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Habits - Productivity Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="bi bi-arrow-repeat"></i> Habits
+            </h1>
+            <a href="{% url 'habits:habit_create' %}" class="btn btn-info">
+                <i class="bi bi-plus"></i> New Habit
+            </a>
+        </div>
+        
+        <!-- Habits List -->
+        {% if habits %}
+            <div class="row">
+                {% for habit in habits %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card card-hover" style="border-left: 4px solid {{ habit.color }};">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h6 class="card-title mb-0">{{ habit.name }}</h6>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="{% url 'habits:habit_detail' habit.pk %}">
+                                                <i class="bi bi-eye"></i> View
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="{% url 'habits:habit_update' habit.pk %}">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="{% url 'habits:habit_delete' habit.pk %}">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                {% if habit.description %}
+                                    <p class="card-text text-muted small">{{ habit.description|truncatewords:15 }}</p>
+                                {% endif %}
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <span class="badge bg-primary">{{ habit.get_frequency_display }}</span>
+                                        <span class="badge bg-secondary">{{ habit.get_category_display }}</span>
+                                    </div>
+                                    
+                                    {% if habit.pk in today_completions %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check"></i> Completed Today
+                                        </span>
+                                    {% else %}
+                                        <form method="post" action="{% url 'habits:habit_complete' habit.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-check"></i> Mark Complete
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-target"></i> Target: {{ habit.target_count }} {{ habit.unit }}
+                                        <i class="bi bi-fire ms-2"></i> Streak: {{ habit.current_streak }} days
+                                    </small>
+                                </div>
+                                
+                                <div class="mt-2">
+                                    <div class="d-flex justify-content-between">
+                                        <small>Progress</small>
+                                        <small>{{ habit.completion_rate|floatformat:0 }}%</small>
+                                    </div>
+                                    <div class="progress habit-progress">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ habit.completion_rate }}%; background-color: {{ habit.color }};">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-arrow-repeat text-muted" style="font-size: 4rem;"></i>
+                <h3 class="text-muted mt-3">No habits yet</h3>
+                <p class="text-muted">Start building better habits by creating your first one!</p>
+                <a href="{% url 'habits:habit_create' %}" class="btn btn-info">
+                    <i class="bi bi-plus"></i> Create Habit
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+
+
+

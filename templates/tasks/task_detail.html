@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ task.title }} - Productivity Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h1 class="card-title">{{ task.title }}</h1>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'tasks:task_update' task.pk %}">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'tasks:task_delete' task.pk %}">
+                                <i class="bi bi-trash"></i> Delete
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                {% if task.description %}
+                    <div class="mb-4">
+                        <h5>Description</h5>
+                        <p class="text-muted">{{ task.description|linebreaks }}</p>
+                    </div>
+                {% endif %}
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Task Details</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td><span class="badge bg-{{ task.get_status_color }}">{{ task.get_status_display }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Priority:</strong></td>
+                                <td><span class="badge bg-{{ task.get_priority_color }}">{{ task.get_priority_display }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Category:</strong></td>
+                                <td>{{ task.get_category_display }}</td>
+                            </tr>
+                            {% if task.due_date %}
+                            <tr>
+                                <td><strong>Due Date:</strong></td>
+                                <td>
+                                    {% if task.is_overdue %}
+                                        <span class="text-danger">{{ task.due_date|date:"M d, Y H:i" }} (Overdue)</span>
+                                    {% elif task.is_due_today %}
+                                        <span class="text-warning">{{ task.due_date|date:"M d, Y H:i" }} (Due Today)</span>
+                                    {% else %}
+                                        {{ task.due_date|date:"M d, Y H:i" }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td><strong>Created:</strong></td>
+                                <td>{{ task.created_at|date:"M d, Y H:i" }}</td>
+                            </tr>
+                            {% if task.completed_at %}
+                            <tr>
+                                <td><strong>Completed:</strong></td>
+                                <td>{{ task.completed_at|date:"M d, Y H:i" }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        {% if task.tags %}
+                        <h5>Tags</h5>
+                        <div class="mb-3">
+                            {% for tag in task.tag_list %}
+                                <span class="badge bg-light text-dark me-1">#{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <h5>Actions</h5>
+                        <div class="d-grid gap-2">
+                            {% if task.status != 'completed' %}
+                                <form method="post" action="{% url 'tasks:task_complete' task.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check"></i> Mark as Complete
+                                    </button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url 'tasks:task_complete' task.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Mark as Pending
+                                    </button>
+                                </form>
+                            {% endif %}
+                            
+                            <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Edit Task
+                            </a>
+                            
+                            <a href="{% url 'tasks:task_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Tasks
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Quick Stats</h5>
+                
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="text-primary fw-bold fs-4">{{ task.created_at|date:"d" }}</div>
+                        <small class="text-muted">Created</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-info fw-bold fs-4">{{ task.updated_at|date:"d" }}</div>
+                        <small class="text-muted">Updated</small>
+                    </div>
+                </div>
+                
+                {% if task.due_date %}
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between">
+                        <small>Days until due</small>
+                        <small>
+                            {% if task.is_overdue %}
+                                <span class="text-danger">{{ task.due_date|timesince }} overdue</span>
+                            {% elif task.is_due_today %}
+                                <span class="text-warning">Due today</span>
+                            {% else %}
+                                {{ task.due_date|timeuntil }}
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Comments</h5>
+                <p class="text-muted small">Comments feature coming soon!</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Productivity Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">
+                    <i class="bi bi-person-circle"></i> Profile
+                </h3>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Personal Information</h5>
+                        <p><strong>Username:</strong> {{ user.username }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>First Name:</strong> {{ user.first_name }}</p>
+                        <p><strong>Last Name:</strong> {{ user.last_name }}</p>
+                        <p><strong>Date Joined:</strong> {{ user.date_joined|date:"M d, Y" }}</p>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5>Profile Information</h5>
+                        <p><strong>Bio:</strong> {{ profile.bio|default:"Not provided" }}</p>
+                        <p><strong>Location:</strong> {{ profile.location|default:"Not provided" }}</p>
+                        <p><strong>Birth Date:</strong> {{ profile.birth_date|default:"Not provided" }}</p>
+                        <p><strong>Theme:</strong> {{ profile.get_theme_preference_display }}</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <a href="{% url 'users:profile_edit' %}" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Edit Profile
+                    </a>
+                    <a href="{% url 'users:settings' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Productivity Stats</h5>
+                
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="text-primary fw-bold fs-4">{{ total_tasks }}</div>
+                        <small class="text-muted">Total Tasks</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-success fw-bold fs-4">{{ completed_tasks }}</div>
+                        <small class="text-muted">Completed</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-info fw-bold fs-4">{{ journal_entries }}</div>
+                        <small class="text-muted">Journal Entries</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="text-warning fw-bold fs-4">{{ habits }}</div>
+                        <small class="text-muted">Habits</small>
+                    </div>
+                </div>
+                
+                {% if completed_tasks > 0 and total_tasks > 0 %}
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between">
+                        <small>Task Completion Rate</small>
+                        <small>{% widthratio completed_tasks total_tasks 100 %}%</small>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {% widthratio completed_tasks total_tasks 100 %}%">
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+

@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics - Productivity Tracker{% endblock %}
+{% block page_heading %}Analytics{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+    <section class="app-card card-pad">
+        <p class="section-title">Total Tasks</p>
+        <p class="mt-2 text-3xl font-bold">{{ task_stats.total_tasks }}</p>
+    </section>
+    <section class="app-card card-pad">
+        <p class="section-title">Completed Tasks</p>
+        <p class="mt-2 text-3xl font-bold">{{ task_stats.completed_tasks }}</p>
+    </section>
+    <section class="app-card card-pad">
+        <p class="section-title">Journal Entries</p>
+        <p class="mt-2 text-3xl font-bold">{{ journal_stats.total_entries }}</p>
+    </section>
+    <section class="app-card card-pad">
+        <p class="section-title">Current Streak</p>
+        <p class="mt-2 text-3xl font-bold">{{ journal_stats.current_streak }}</p>
+    </section>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+    <section class="app-card card-pad">
+        <p class="section-title">Weekly Productivity Trends</p>
+        <canvas id="weeklyTrendChart" class="mt-4"></canvas>
+    </section>
+
+    <section class="app-card card-pad">
+        <p class="section-title">Task Creation vs Completion</p>
+        <canvas id="taskChart" class="mt-4"></canvas>
+    </section>
+
+    <section class="app-card card-pad">
+        <p class="section-title">Habit Consistency</p>
+        <canvas id="habitChart" class="mt-4"></canvas>
+    </section>
+
+    <section class="app-card card-pad">
+        <p class="section-title">Mood Trends</p>
+        <canvas id="moodChart" class="mt-4"></canvas>
+    </section>
+</div>
+
+<section class="app-card card-pad mt-5">
+    <p class="section-title">Rule-based Insights</p>
+    <div class="mt-4 space-y-3">
+        {% for insight in insights %}
+        <article class="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm text-slate-700 dark:text-slate-200">
+            {{ insight }}
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const weeklyTrends = {{ weekly_trends|safe }};
+    const trendCtx = document.getElementById('weeklyTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: weeklyTrends.labels,
+            datasets: [
+                {
+                    label: 'Task Completion %',
+                    data: weeklyTrends.task_completion,
+                    borderColor: 'rgb(79, 70, 229)',
+                    backgroundColor: 'rgba(79, 70, 229, 0.15)',
+                    tension: 0.25,
+                },
+                {
+                    label: 'Habit Completion %',
+                    data: weeklyTrends.habit_completion,
+                    borderColor: 'rgb(16, 185, 129)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                    tension: 0.25,
+                },
+                {
+                    label: 'Journal Presence %',
+                    data: weeklyTrends.journal_presence,
+                    borderColor: 'rgb(245, 158, 11)',
+                    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                    tension: 0.25,
+                },
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, max: 100 },
+            }
+        }
+    });
+
+    fetch('{% url "dashboard:task_stats_api" %}?days=30')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('taskChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels.map(label => new Date(label).toLocaleDateString()),
+                    datasets: [
+                        {
+                            label: 'Completed Tasks',
+                            data: data.completed,
+                            borderColor: 'rgb(16, 185, 129)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            tension: 0.2,
+                        },
+                        {
+                            label: 'Created Tasks',
+                            data: data.created,
+                            borderColor: 'rgb(239, 68, 68)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            tension: 0.2,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } },
+                },
+            });
+        });
+
+    fetch('{% url "dashboard:habit_stats_api" %}?days=30')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('habitChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } },
+                },
+            });
+        });
+
+    fetch('{% url "dashboard:mood_stats_api" %}?days=30')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('moodChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: data,
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true, max: 10 } },
+                },
+            });
+        });
+</script>
+{% endblock %}
